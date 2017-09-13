@@ -498,6 +498,83 @@ class Dropbox
     }
 
     /**
+     * Creates a shared Link for the given path. It is designed to handle both create_shared_link, and create_shared_link_with_settings methods
+     *
+     *
+     * @param  string $path Path to file/folder to share
+     *
+     * // temp fix till an object is written to handle preperation
+     * @param  array (
+     *            'requested_visibility' - {".tag":"public"} / {".tag":"team_only"} / {".tag":"password"}
+     *            'expires'              - Date formatted in %Y-%m-%dT%H:%M:%SZ (2017-12-25T17:30:00Z) 
+     *            'link_password'        - password to access the link
+     *         )   
+     *
+     * @return array
+     *
+     * @throws \Kunnu\Dropbox\Exceptions\DropboxClientException
+     *
+     * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-create_shared_link_with_settings
+     *
+     */
+    
+     public function createShareableLink($path, $optionalSettings = array())
+     {
+         //Path cannot be null
+         if (is_null($path)) {
+             throw new DropboxClientException("Path cannot be null.");
+         }
+ 
+         $optionalSettings['path'] = $path;
+ 
+         //Create Shared Link 
+         $response = $this->postToAPI('/sharing/create_shared_link_with_settings', $optionalSettings);
+ 
+         //Fetch the Metadata
+         $body = $response->getDecodedBody();
+ 
+         //Make and Return the Model
+         return new FileMetadata($body);
+     }
+ 
+     /**
+      * List matching shared Links for the given path 
+      *
+      * @param  string $path Path to file/folder
+      *
+      * // temp fix till an object is written to handle preperation
+      * @param  array (
+      *            'cursor'      - part of a paginator?, returned when calling List Shared Links    
+      *            'direct_only' - boolean True | False  
+      *         )   
+      *
+      * @return array
+      *
+      * @throws \Kunnu\Dropbox\Exceptions\DropboxClientException
+      *
+      * @link https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_shared_links
+      *
+      */
+ 
+     public function listSharedLinks($path = null, $optionalSettings = array())
+     {
+         //Path cannot be null
+         if (!is_null($path)) {
+             $optionalSettings['path'] = $path;
+         }
+ 
+         //List Matching Shared Links
+         $response = $this->postToAPI('/sharing/list_shared_links', $optionalSettings);
+ 
+         //Fetch the Metadata
+         $body = $response->getDecodedBody();
+ 
+         //Make and Return the Model
+         return $body;
+     }
+     
+
+    /**
      * Delete a file or folder at the given path
      *
      * @param  string $path Path to file/folder to delete
